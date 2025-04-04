@@ -1,37 +1,93 @@
-# TODO LISTE
+# TODO LISTE  
+_Last update: 04.04.2025 ~Jan_
 
-## Jan
+---
 
-- Ziel und grundlegendes Vorgehen (Concept Map / Dokumentation / Datenstruktur) - auf Englisch
-- Installationsanleitung inkl. Abhängigkeiten (setup.py, requirements.txt, etc.) + Datenstruktur, wie GitHub aufgebaut
-- Workflows, Datenfluss, Dokumentationstools wählen (Sphinx vs. MkDocs)
-- Templates?
+## Main Idea  
+Interaktive Weltkarte zur Darstellung und Analyse globaler Entwicklungen in der KI-Forschung, basierend auf **OpenAIRE-Daten**.
 
-## Katerina
+---
 
-- API ansteuern können, Anfragen speichern (z.B. in JSON-Dateien?)
-  - API Limits? 60 Requests ausreichend? Wenn nicht, welche nächsten Schritte?
-  - Script zum Request (als Showcase für den Förstner)
-  - Anfrage transformieren, oder ist JSON ausreichend?
+## Core Features – Hauptkarte
 
+### Visualisierungsart (Choroplethen)
+
+**Multiple Choice Filter:**
+- Anzahl Publikationen  
+- Anzahl Projekte  
+- Anzahl Institutionen aktiv in KI-Forschung  
+
+**Single Choice Filter:**
+- Wachstumsentwicklung im Betrachtungszeitraum X bis Y
+
+### Filterpanel
+- Zeitspanne  
+- Projekttyp (z. B. alle, privat, national, EU, etc.)
+
+### Weitere Überlegungen (wenn Projektzeit es erlaubt)
+- Filterpanel nach Forschungsbereich (z. B. NLP, GenAI, Computer Vision)
+- OnClick auf Land: Top-Projekte & Institutionen, Graphen zur zeitlichen Entwicklung von Jahr X bis Y
+- Darstellung von Forschungskooperationen  
+  (Verbindungslinien zwischen Ländern, Größenordnung abhängig von Kooperationsintensität)
+
+---
+
+## OPEN TODOs (chronologisch)
+- Datenqualität der API prüfen (Vollständigkeit, Datenbereinigung?)  
+- Pipeline skizzieren:  
+  - Wie API-Daten extrahieren?  
+  - In nutzbares Format transformieren  
+  - Speicherung & Abfrageformat für einfache Maßzahlen (measures)  
+- Datenvisualisierung:  
+  - Welche Umgebung? Welche Interaktivität möglich?  
+  - Visualisierung per Landkarte, Zeitfilter, etc.?  
+  - TechStack?  
+- Verknüpfung mit Länder-Visualisierung (GeoJSON?)
+
+---
+
+## Progress
+
+### In Development
+
+#### Jan
+- Erste API-Testabfragen
+
+#### Katerina
+*(noch keine Einträge)*
+
+### Done
+- Dokumentation & Projektplanung
+- Welche Informationen sind verwertbar?  
+  - Welche Forschungsfelder wollen wir darstellen?  
+  - Welche statistischen Maße (measures) sind sinnvoll?  
+  - Festlegung der Features
+- API-Dokumentation & Tutorials lesen  
+~Jan, 01.04.2025
+
+---
+
+## Projektstruktur
+
+```bash
 OpenAIRE-Knowledge-Graph-Explorer/
-├── src/                        # Source code directory (Python modules)
-│   └── python_module.py        # Example Python module with functions
+├── src/                        # Source Code (Python Module)
+│   └── python_module.py        # Beispielmodul
 │
-├── tests/                      # Test directory for unimplemented tests
-│   └── test_example.py         # Example test file (can be written using pytest or unittest)
+├── tests/                      # Tests (pytest / unittest)
+│   └── test_example.py         
 │
-├── documentation/              # Sphinx Documentation directory
-│   ├── sphinx_docs/            # Sphinx documentation files
-│   │   ├── _build/             # Generated documentation (HTML output)
-│   │   ├── _static/            # Static files (images, CSS, etc.)
-│   │   ├── _templates/         # Templates for Sphinx
-│   │   ├── conf.py             # Sphinx configuration file
-│   │   ├── index.rst           # Main documentation file (Table of Contents)
-│   │   ├── python_module.rst   # Documentation setting file for the example python module
-│   └── requirements.txt        # Dependencies (Sphinx and other libraries)
+├── documentation/              # Sphinx Dokumentation
+│   ├── sphinx_docs/
+│   │   ├── _build/             # Generierte Doku (HTML)
+│   │   ├── _static/            # Statische Inhalte (Bilder, CSS)
+│   │   ├── _templates/         # Sphinx-Templates
+│   │   ├── conf.py             # Konfiguration
+│   │   ├── index.rst           # Hauptseite
+│   │   └── python_module.rst   # Moduldoku
+│   └── requirements.txt        # Abhängigkeiten (Sphinx etc.)
 │
-├── requirements.txt            # Python dependencies
-├── setup.py                    # Setup script for installing the package
-├── README.md                   # Project overview and usage
-└── LICENSE                     # Project license
+├── requirements.txt            # Python-Abhängigkeiten
+├── setup.py                    # Setup-Skript
+├── README.md                   # Projektübersicht & Usage
+└── LICENSE                     # Lizenz
