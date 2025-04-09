@@ -1,69 +1,72 @@
 # TODO LISTE  
-_Last update: 04.04.2025 ~Jan_
+_Last update: 09.04.2025 ~Jan_
+
+---
+## **Main Idea**  
+Webanwendung – Interaktive Weltkarte zur Darstellung globaler Entwicklungen in der **KI-Forschung**.
+
+Datenquelle: **OpenAIRE API**.
 
 ---
 
-## Main Idea  
-Interaktive Weltkarte zur Darstellung und Analyse globaler Entwicklungen in der KI-Forschung, basierend auf **OpenAIRE-Daten**.
+## **Core Features – Hauptkarte**
 
----
+### **Visualisierungsart (Choroplethenkarte)**
 
-## Core Features – Hauptkarte
+#### **Filter – Multiple Choice:**
+- Anzahl der Publikationen  
+- Anzahl der Projekte  
+- Anzahl der Institutionen/Autoren aktiv in der KI-Forschung  
 
-### Visualisierungsart (Choroplethen)
+#### **Filter – Single Choice:**
+- Wachstumsentwicklung im Betrachtungszeitraum von Jahr X bis Jahr Y
 
-**Multiple Choice Filter:**
-- Anzahl Publikationen  
-- Anzahl Projekte  
-- Anzahl Institutionen aktiv in KI-Forschung  
-
-**Single Choice Filter:**
-- Wachstumsentwicklung im Betrachtungszeitraum X bis Y
-
-### Filterpanel
+### **Filterpanel**
 - Zeitspanne  
-- Projekttyp (z. B. alle, privat, national, EU, etc.)
+- Projekttyp (z.B. alle, privat, national, EU, etc.)
 
-### Weitere Überlegungen (wenn Projektzeit es erlaubt)
-- Filterpanel nach Forschungsbereich (z. B. NLP, GenAI, Computer Vision)
-- OnClick auf Land: Top-Projekte & Institutionen, Graphen zur zeitlichen Entwicklung von Jahr X bis Y
-- Darstellung von Forschungskooperationen  
-  (Verbindungslinien zwischen Ländern, Größenordnung abhängig von Kooperationsintensität)
-
----
-
-## OPEN TODOs (chronologisch)
-- Datenqualität der API prüfen (Vollständigkeit, Datenbereinigung?)  
-- Pipeline skizzieren:  
-  - Wie API-Daten extrahieren?  
-  - In nutzbares Format transformieren  
-  - Speicherung & Abfrageformat für einfache Maßzahlen (measures)  
-- Datenvisualisierung:  
-  - Welche Umgebung? Welche Interaktivität möglich?  
-  - Visualisierung per Landkarte, Zeitfilter, etc.?  
-  - TechStack?  
-- Verknüpfung mit Länder-Visualisierung (GeoJSON?)
+### **Weitere Überlegungen (abhängig von Projektzeitraum)**  
+- Sub-Forschungsbereiche (z.B. NLP, GenAI, Computer Vision) als zusätzliche Filteroption
+- OnClick auf ein Land: Anzeige des Rankings der Anzahl veröffentlichter Projekte nach Autor/Institution und Darstellung der zeitlichen Entwicklung von Jahr X bis Jahr Y in Graphen
+- Visualisierung von Forschungskooperationen:  
+  (Verbindungslinien zwischen Ländern, die je nach Kooperationsintensität variieren)
+- Weitere Forschungsfelder einbinden
+- **Update-Funktion**:  
+  OpenAIRE API-Anfrage für alle gewählten Forschungsfelder, die JSON-Daten neuerer Datensätze als die letzten in der Datenbank enthalten. Extraktion und Anfügen an die existierenden Tabellen, gefolgt von einem **Daten-Refresh** in der Anwendung.
 
 ---
 
-## Progress
+## **OPEN TODOs** (chronologisch)
 
-### In Development
+- Gesamt-Abfrage aller JSON-Datensätze zu Projekten mit KI-Kontext  
+- Extraktion und Zusammenführung dieser JSON-Daten in **SQLite** oder **MySQL** Tabellen
+- Grundkonstrukt der interaktiven Webanwendung erstellen (HTML, CSS, JavaScript)
+- Implementierung der Landkartenvisualisierung (mit Leaflet, Choroplethenkarte?)
+- Implementierung dynamischer Filter und Regler – Verknüpfung mit Datenbankabfragen (API erstellen) und Aktualisierung der Länderkarte
+- Design der Webanwendung (Design und UI/UX verbessern)
+- **How to host?** Ausführliche Dokumentation und Vereinfachung der Projektaufsetzung sowie Bereitstellung der Anwendung
 
-#### Jan
-- Erste API-Testabfragen
+---
 
-#### Katerina
+## **Progress**
+
+### **In Development**
+
+#### **Jan**
+- Test-API-Abfrage von ca. 1000 Projektdaten und Zusammenführung in eine CSV-Datei
+- Prüfung der Datenqualität und Projekttauglichkeit anhand der Test-Abfrage CSV
+
+#### **Katerina**
 *(noch keine Einträge)*
 
-### Done
-- Dokumentation & Projektplanung
-- Welche Informationen sind verwertbar?  
-  - Welche Forschungsfelder wollen wir darstellen?  
-  - Welche statistischen Maße (measures) sind sinnvoll?  
-  - Festlegung der Features
-- API-Dokumentation & Tutorials lesen  
-~Jan, 01.04.2025
+### **Done**
+- Dokumentation & Projektplanung abgeschlossen  
+- Entscheidung über relevante Informationen getroffen:  
+  - Welche Forschungsfelder sollen dargestellt werden?  
+  - Welche statistischen Maße sind sinnvoll?  
+  - Festlegung der Features und Funktionalitäten  
+- API-Dokumentation und Tutorials studiert  
+  (Stand: 01.04.2025)
 
 ---
 
