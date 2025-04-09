@@ -57,7 +57,7 @@ Datenquelle: **OpenAIRE API**.
 - Prüfung der Datenqualität und Projekttauglichkeit anhand der Test-Abfrage CSV
 
 #### **Katerina**
-*(noch keine Einträge)*
+- API-Abfragen von 10.000 KI-verbundenen Publikationen (Es fehlen Länder für unsere Idee)
 
 ### **Done**
 - Dokumentation & Projektplanung abgeschlossen  
