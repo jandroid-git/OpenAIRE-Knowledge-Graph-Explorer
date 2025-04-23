@@ -10,8 +10,8 @@ from tqdm import tqdm  # Importiere die tqdm-Bibliothek
 
 
 # Verzeichnis für Originaldaten und Zielordner für CSV-Dateien
-original_data_dir = 'data\\cleaned_projects_data_april2025'
-output_dir = 'data\\projects_data_csv'
+original_data_dir = "data\cleaned_projects_data_april2025"
+output_dir = 'data\projects_data_csv'
 
 # Sicherheitsfunktion für den Umgang mit 'None'-Werten
 def safe(value):

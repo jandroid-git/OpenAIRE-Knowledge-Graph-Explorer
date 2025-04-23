@@ -122,11 +122,16 @@ for _ in tqdm(range(1), desc="Erstelle Diagramme für CallIdentifiers und Keywor
     plt.xlabel('Keywords')
     plt.ylabel('Häufigkeit')
     plt.xticks(rotation=45, ha='right')  # X-Achsen-Beschriftung rotieren
+
+    # Platz unten erhöhen für besser sichtbare X-Achsen-Beschriftung
+    plt.subplots_adjust(bottom=0.8)
+
     plt.tight_layout()
 
     # 'keywords' Plot speichern
     plt.savefig(os.path.join(output_folder, 'keywords_top_20.png'))
     plt.close()
+
 
 # Zeitliche Analyse: Start- und Enddatum der Projekte
 # Zunächst die Spalten in Datetime konvertieren
