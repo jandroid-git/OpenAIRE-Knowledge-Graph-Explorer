@@ -100,3 +100,5 @@ st.pyplot(fig7)
 
 st.markdown("---")
 st.caption("Datenquelle: OpenAIRE. Erstellt in Python und Streamlit.")
+
+# # Starte das Dashboard mit Streamlit: streamlit run src/dashboard.py  
