@@ -171,3 +171,53 @@ for _ in tqdm(range(1), desc="Erstelle Diagramm für durchschnittlichen Förderb
     # Durchschnittlicher Förderbetrag pro Jahr Plot speichern
     plt.savefig(os.path.join(output_folder, 'avg_funded_amount_by_year.png'))
     plt.close()
+
+
+# ============================================
+# Neue Analyse 1: Top 10 Funder nach Fördersumme
+# ============================================
+merged_funding = pd.merge(data_funder, data_projects[['id', 'fundedAmount']], left_on='project_id', right_on='id', how='left')
+funding_sum_by_funder = merged_funding.groupby('funder_name')['fundedAmount'].sum().sort_values(ascending=False).head(10)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=funding_sum_by_funder.values, y=funding_sum_by_funder.index, color='teal')
+plt.title('Top 10 Förderer nach Gesamtsumme der Förderungen')
+plt.xlabel('Gesamte Fördermittel (€)')
+plt.ylabel('Förderer')
+plt.tight_layout()
+plt.savefig(os.path.join(output_folder, 'top10_funder_by_fundedAmount.png'))
+plt.close()
+
+# ============================================
+# Neue Analyse 2: Durchschnittlicher Förderbetrag pro Funder
+# ============================================
+avg_funding_by_funder = merged_funding.groupby('funder_name')['fundedAmount'].mean().sort_values(ascending=False).head(10)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=avg_funding_by_funder.values, y=avg_funding_by_funder.index, color='steelblue')
+plt.title('Durchschnittlicher Förderbetrag pro Förderer (Top 10)')
+plt.xlabel('Durchschnittliche Förderung (€)')
+plt.ylabel('Förderer')
+plt.tight_layout()
+plt.savefig(os.path.join(output_folder, 'avg_funded_per_funder.png'))
+plt.close()
+
+# ============================================
+# Neue Analyse 3: Projektdauer vs Förderbetrag
+# ============================================
+# Berechne Projektdauer in Tagen
+data_projects['project_duration_days'] = (data_projects['endDate'] - data_projects['startDate']).dt.days
+
+# Filtere ungültige Werte
+valid_duration = data_projects[(data_projects['project_duration_days'] > 0) & (data_projects['fundedAmount'] > 0)]
+
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=valid_duration, x='project_duration_days', y='fundedAmount', alpha=0.5)
+plt.title('Zusammenhang zwischen Projektdauer und Förderbetrag')
+plt.xlabel('Projektdauer (Tage)')
+plt.ylabel('Förderbetrag (€)')
+plt.tight_layout()
+plt.savefig(os.path.join(output_folder, 'scatter_duration_vs_funding.png'))
+plt.close()
+
+
