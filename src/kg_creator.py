@@ -21,12 +21,12 @@ except FileNotFoundError:
     exit(1)
 
 projects_csv_file = 'data/projects_data_csv/projects.csv'
-funders_csv_file = 'data/projects_data_csv/funders.csv'
+funders_csv_file = 'data/projects_data_csv/funders_enriched.csv'
 countries_csv_file = 'data/projects_data_csv/countries.csv'
 project_funder_rel_csv_file = 'data/projects_data_csv/project_funder_rel.csv'
 project_country_rel_csv_file = 'data/projects_data_csv/project_country_rel.csv'
 
-LIMIT_ENTRIES = 100000  # oder None für alle
+LIMIT_ENTRIES = 1000  # oder None für alle
 
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
@@ -113,12 +113,42 @@ def create_project_nodes(csv_file, limit=None):
 def create_funder_nodes(csv_file):
     query = """
     MERGE (f:Funder {name: $name})
-    SET f.shortName = $shortName
+    SET f.shortName = $shortName,
+        f.ror_id = $ror_id,
+        f.ror_name = $ror_name,
+        f.types = $types,
+        f.status = $status,
+        f.aliases = $aliases,
+        f.labels = $labels,
+        f.acronyms = $acronyms,
+        f.wikipedia_url = $wikipedia_url,
+        f.links = $links,
+        f.established = $established,
+        f.lat = $lat,
+        f.lng = $lng,
+        f.city_name = $city_name
     """
-    load_csv_and_run_batch(csv_file, query, lambda row: {
-        "name": row['name'],
-        "shortName": row['shortName']
-    }, show_progress=True)
+    def params(row):
+        return {
+            "name": row['name'],
+            "shortName": row.get('shortName', ''),
+            "ror_id": row.get('ror_id', ''),
+            "ror_name": row.get('ror_name', ''),
+            "types": row.get('types', ''),
+            "status": row.get('status', ''),
+            "aliases": row.get('aliases', ''),
+            "labels": row.get('labels', ''),
+            "acronyms": row.get('acronyms', ''),
+            "wikipedia_url": row.get('wikipedia_url', ''),
+            "links": row.get('links', ''),
+            "established": int(float(row['established'])) if row.get('established', '').strip() else None,
+            "lat": float(row['lat']) if row.get('lat', '').strip() else None,
+            "lng": float(row['lng']) if row.get('lng', '').strip() else None,
+            "city_name": row.get('city_name', '')
+        }
+
+    load_csv_and_run_batch(csv_file, query, params, show_progress=True)
+
 
 def create_country_nodes(csv_file):
     query = """
