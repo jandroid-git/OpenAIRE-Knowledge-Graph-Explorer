@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 
 # === Parameter ===
-LIMIT = 100  # Anzahl der Projekte zum Verarbeiten; setze auf None für alle
+LIMIT = 1000  # Anzahl der Projekte zum Verarbeiten; setze auf None für alle
 
 # === Eingabedateien ===
 PROJECTS_CSV = 'data/projects_data_csv/projects.csv'
@@ -46,6 +46,7 @@ print(f"🔍 Starte Publikationssuche für {total_projects} Projekte...")
 
 # === Hauptlogik ===
 for idx, row in projects_df.head(LIMIT).iterrows():
+    current = idx + 1  # aktueller Zähler (1-basiert)
     project_id = row['id']
     title_query = row['title']
 
@@ -66,7 +67,7 @@ for idx, row in projects_df.head(LIMIT).iterrows():
     if response.status_code == 200:
         items = response.json()['message']['items']
         if items:
-            print(f"✅ {len(items)} Treffer für Projekt-ID {project_id}")
+            print(f"✅ {len(items)} Treffer für Projekt-ID {project_id} ({current}/{total_projects})")
             for item in items:
                 doi = item.get('DOI', '')
                 title = item.get('title', [''])[0]
@@ -88,9 +89,10 @@ for idx, row in projects_df.head(LIMIT).iterrows():
                     "doi": doi
                 })
         else:
-            print(f"❌ Keine Publikationen für Projekt {project_id}")
+            print(f"❌ Keine Publikationen für Projekt {project_id} ({current}/{total_projects})")
     else:
-        print(f"⚠️ Fehler für Projekt {project_id}: HTTP {response.status_code}")
+        print(f"⚠️ Fehler für Projekt {project_id}: HTTP {response.status_code} ({current}/{total_projects})")
+
 
 # === Speichern ===
 pd.DataFrame(publication_rows).to_csv(PUBLICATIONS_CSV, index=False)

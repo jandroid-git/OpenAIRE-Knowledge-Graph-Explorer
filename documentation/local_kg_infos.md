@@ -2,18 +2,54 @@ local neo4j Zugangsdaten Jan:
 KG_name: openAIRE_KG_Projects
 password: own password
 
-show whole KG:
+
+Zeigt ein Projekt, seine zugehörigen Publikationen, Funder und ggf. Länder:
+
+MATCH (p:Project)-[r]-(x)
+WHERE p.title CONTAINS "climate" // oder ein konkreter Titelteil
+RETURN p, r, x
+LIMIT 1
+
+
+Ein Funder, alle zugehörigen Projekte und Publikationen
+
+MATCH (f:Funder {name: "European Commission"})<-[:FUNDED_BY]-(p:Project)
+OPTIONAL MATCH (p)-[:HAS_PUBLICATION]->(pub:Publication)
+RETURN f, p, pub
+LIMIT 100
+
+
+Zeigt ein vollständiges Mini-Ökosystem:
+
 MATCH (p:Project)-[:FUNDED_BY]->(f:Funder),
-      (p)-[:LOCATED_IN]->(c:Country)
-RETURN p, f, c LIMIT SETLIMIT
+      (p)-[:LOCATED_IN]->(c:Country),
+      (p)-[:HAS_PUBLICATION]->(pub:Publication)
+WHERE p.startDate STARTS WITH "2019"
+RETURN p, f, c, pub
+LIMIT 100
 
-show projects with country realtionship:
+
+Projekte nach Zeit und Land clustern
+
 MATCH (p:Project)-[:LOCATED_IN]->(c:Country)
-RETURN p, c LIMIT SETLIMIT
+WHERE p.startDate >= "2020-01-01"
+RETURN c.jurisdiction AS country, count(p) AS projects
+ORDER BY projects DESC
+LIMIT 10
 
-show projects with funders realtionship:
-MATCH (p:Project)-[:FUNDED_BY]->(f:Funder)
-RETURN p, f LIMIT SETLIMIT
 
-show all projects:
-MATCH (p:Project) RETURN p LIMIT SETLIMIT
+Verbindungen zwischen Fundern über gemeinsame Publikationen
+
+MATCH (f1:Funder)<-[:FUNDED_BY]-(p1:Project)-[:HAS_PUBLICATION]->(pub:Publication)<-[:HAS_PUBLICATION]-(p2:Project)-[:FUNDED_BY]->(f2:Funder)
+WHERE f1 <> f2
+RETURN DISTINCT f1, f2, pub
+LIMIT 50
+
+
+random netz
+
+MATCH (p:Project)-[r]-(x)
+WITH p, r, x
+ORDER BY rand()
+RETURN p, r, x
+LIMIT 100
