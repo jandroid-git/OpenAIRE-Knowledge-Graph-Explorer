@@ -2,7 +2,6 @@ from neo4j import GraphDatabase
 import csv
 import logging
 from tqdm import tqdm
-import os
 
 # === Konfiguration ===
 
@@ -25,8 +24,10 @@ funders_csv_file = 'data/projects_data_csv/funders_enriched.csv'
 countries_csv_file = 'data/projects_data_csv/countries.csv'
 project_funder_rel_csv_file = 'data/projects_data_csv/project_funder_rel.csv'
 project_country_rel_csv_file = 'data/projects_data_csv/project_country_rel.csv'
+publication_csv_file = 'data/projects_data_csv/project_publications.csv'
+pub_project_rel_csv_file = 'data/projects_data_csv/publication_project_rel.csv'
 
-LIMIT_ENTRIES = 1000  # oder None für alle
+LIMIT_ENTRIES = 100  # Nur 100 Projekte
 
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
@@ -146,14 +147,10 @@ def create_funder_nodes(csv_file):
             "lng": float(row['lng']) if row.get('lng', '').strip() else None,
             "city_name": row.get('city_name', '')
         }
-
     load_csv_and_run_batch(csv_file, query, params, show_progress=True)
 
-
 def create_country_nodes(csv_file):
-    query = """
-    MERGE (c:Country {jurisdiction: $jurisdiction})
-    """
+    query = "MERGE (c:Country {jurisdiction: $jurisdiction})"
     load_csv_and_run_batch(csv_file, query, lambda row: {
         "jurisdiction": row['jurisdiction']
     }, show_progress=True)
@@ -180,6 +177,53 @@ def create_project_country_relationship(csv_file, limit=None):
         "country": row['country']
     }, limit, show_progress=True)
 
+def create_publication_nodes(csv_file):
+    query = """
+    MERGE (pub:Publication {doi: $doi})
+    SET pub.title = $title,
+        pub.journal = $journal,
+        pub.citation_count = $citation_count
+    """
+    def params(row):
+        return {
+            "doi": row['doi'],
+            "title": row.get('title', ''),
+            "journal": row.get('journal', ''),
+            "citation_count": int(row['citation_count']) if row.get('citation_count') else 0
+        }
+    load_csv_and_run_batch(csv_file, query, params, show_progress=True)
+
+def create_project_publication_relationship(csv_file):
+    query = """
+    MATCH (p:Project {id: $project_id})
+    MATCH (pub:Publication {doi: $doi})
+    MERGE (p)-[:HAS_PUBLICATION]->(pub)
+    """
+    load_csv_and_run_batch(csv_file, query, lambda row: {
+        "project_id": row['project_id'],
+        "doi": row['doi']
+    }, show_progress=True)
+
+def create_funder_publication_relationship(publication_rel_csv, funder_rel_csv):
+    # project_id → funder_name
+    funder_map = {}
+    with open(funder_rel_csv, 'r', encoding='utf-8') as f:
+        for row in csv.DictReader(f):
+            funder_map[row['project_id']] = row['funder_name']
+
+    query = """
+    MATCH (f:Funder {name: $funder_name})
+    MATCH (pub:Publication {doi: $doi})
+    MERGE (f)-[:ACKNOWLEDGED_IN]->(pub)
+    """
+    def params(row):
+        return {
+            "funder_name": funder_map.get(row['project_id'], ''),
+            "doi": row['doi']
+        }
+
+    load_csv_and_run_batch(publication_rel_csv, query, params, show_progress=True)
+
 # === Ausführung ===
 
 if __name__ == "__main__":
@@ -188,5 +232,9 @@ if __name__ == "__main__":
     create_country_nodes(countries_csv_file)
     create_project_funder_relationship(project_funder_rel_csv_file, limit=LIMIT_ENTRIES)
     create_project_country_relationship(project_country_rel_csv_file, limit=LIMIT_ENTRIES)
+    create_publication_nodes(publication_csv_file)
+    create_project_publication_relationship(pub_project_rel_csv_file)
+    create_funder_publication_relationship(pub_project_rel_csv_file, project_funder_rel_csv_file)
+
     driver.close()
-    logging.info("✅ Der Knowledge Graph wurde erfolgreich erstellt!")
+    logging.info("✅ Der Knowledge Graph wurde vollständig erstellt und erweitert!")
