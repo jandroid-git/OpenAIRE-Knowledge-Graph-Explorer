@@ -1,18 +1,32 @@
-Phasen in der Prüfung:
-Open Aire KG vorstellen - Katerina
-Project Ziel und Concept Map - Katerina
-Datenfluss Pipeline - Katerina
-Datenimport - Katerina
-Importdaten Dashboard Overview - Katerina
+# Phasen in der Prüfung
 
-Data enrichment vorstellen - Jan
-KG bauen - Jan
-KG showcase -Jan
-Fazit - Jan
+## Teil 1 – Katerina ~6 Min
 
+1. **Open Aire KG vorstellen**
+2. **Project Ziel und Concept Map**
+3. **Datenfluss Pipeline**
+4. **Datenimport**
+5. **Importdaten Dashboard Overview**
 
+## Teil 2 – Jan ~4 Minuten
 
-sonstige Aufgaben bis zur Prüfung:
-Instellatiosnanleitung, sauberes repo, sauberer code - Jan
-Markdown Dokumentation für jeden step aus der Pipeline - Katerina (Eine Markdown Datei mit Abshcnitten für die steps - kann man gut verbinden mit einzelnen geanueren pipeline Bildern)
+6. **Data Enrichment vorstellen**
+7. **Knowledge Graph bauen**
+8. **KG Showcase**
+9. **Fazit**
 
+---
+
+# Sonstige Aufgaben bis zur Prüfung
+
+## Jan
+
+- [ ] Installationsanleitung erstellen
+- [ ] Repository aufräumen
+- [ ] Code säubern und aus dokumentieren (im code)
+
+## Katerina
+
+- [ ] Markdown-Dokumentation für jeden Step aus der Pipeline  
+  - Eine zusammenhängende Markdown-Datei mit Abschnitten für jeden Step  
+  - Visualisierung durch einzelne Pipeline-Bilder
