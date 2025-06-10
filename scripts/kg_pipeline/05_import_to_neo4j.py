@@ -3,22 +3,38 @@ import csv
 import logging
 from tqdm import tqdm
 
-# === Konfiguration ===
+# =====================================================================================
+# Script: local neo4j Knowledge Graph creator script
+# Author: Jan
+# Date: March 2025
+#
+# Description:
+# This script creates the neo4j Knowledeg Graph based on the initial created node csv files and theire corespondnng csv relationship files using Cypher.
+#
+# NOTE:
+# 
+# =====================================================================================
 
+
+# === Configuration and Setup ===
+
+# Configure logging for informative console output
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
+# Neo4j connection parameters
 uri = "bolt://localhost:7687"
 username = "neo4j"
 
-# Passwort aus Datei lesen
+# Read Neo4j password from file - this subfolder and file has to be created by yourself and stores the privat password for your local neo4j database
 access_file = "neo4j_data/neo_access.txt"
 try:
     with open(access_file, "r", encoding="utf-8") as f:
         password = f.readline().strip()
 except FileNotFoundError:
-    logging.critical(f"❌ Zugriffsdaten-Datei nicht gefunden: {access_file}")
+    logging.critical(f"❌ Access file not found: {access_file}")
     exit(1)
 
+# CSV input file paths for nodes and relationships
 projects_csv_file = 'data/projects_data_csv/projects.csv'
 funders_csv_file = 'data/projects_data_csv/funders_enriched.csv'
 countries_csv_file = 'data/projects_data_csv/countries.csv'
@@ -27,13 +43,19 @@ project_country_rel_csv_file = 'data/projects_data_csv/project_country_rel.csv'
 publication_csv_file = 'data/projects_data_csv/project_publications.csv'
 pub_project_rel_csv_file = 'data/projects_data_csv/publication_project_rel.csv'
 
-LIMIT_ENTRIES = 1000  # Nur n Projekte   "None" für alle
+# Limit number of rows processed (None = all)
+LIMIT_ENTRIES = 1000
 
+# Initialize Neo4j driver for database sessions
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
-# === Hilfsfunktionen ===
+# === Helper Functions ===
 
 def determine_batch_size(total_rows):
+    """
+    Determine an appropriate batch size based on the total number of rows.
+    This helps balance memory usage and performance.
+    """
     if total_rows <= 50:
         return 10
     elif total_rows <= 200:
@@ -50,10 +72,24 @@ def determine_batch_size(total_rows):
         return 10000
 
 def batchify(iterable, batch_size):
+    """
+    Yield successive batches of size batch_size from iterable.
+    """
     for i in range(0, len(iterable), batch_size):
         yield iterable[i:i + batch_size]
 
 def load_csv_and_run_batch(csv_file, query, param_fn, limit=None, show_progress=False):
+    """
+    Generic function to load a CSV file, read data rows, and execute
+    a given Cypher query in batches on Neo4j.
+    
+    Parameters:
+    - csv_file: path to the CSV file
+    - query: Cypher query string with parameters
+    - param_fn: function that maps a CSV row dict to query parameters
+    - limit: optional max number of rows to process
+    - show_progress: whether to display a tqdm progress bar
+    """
     try:
         with open(csv_file, 'r', encoding='utf-8') as file:
             reader = list(csv.DictReader(file))
@@ -64,10 +100,11 @@ def load_csv_and_run_batch(csv_file, query, param_fn, limit=None, show_progress=
             batch_size = determine_batch_size(total)
 
             iterator = batchify(reader, batch_size)
-            bar = tqdm(total=total, desc=f"Lade {csv_file}", unit="Zeile") if show_progress else None
+            bar = tqdm(total=total, desc=f"Loading {csv_file}", unit="rows") if show_progress else None
 
             with driver.session() as session:
                 for batch in iterator:
+                    # Execute write transactions for each batch
                     session.execute_write(lambda tx: [tx.run(query, **param_fn(row)) for row in batch])
                     if bar:
                         bar.update(len(batch))
@@ -75,15 +112,20 @@ def load_csv_and_run_batch(csv_file, query, param_fn, limit=None, show_progress=
             if bar:
                 bar.close()
 
-        logging.info(f"✅ Verarbeitet: {csv_file} (Limit: {limit}, Batch Size: {batch_size})")
+        logging.info(f"✅ Processed: {csv_file} (Limit: {limit}, Batch Size: {batch_size})")
     except FileNotFoundError:
-        logging.error(f"❌ Datei nicht gefunden: {csv_file}")
+        logging.error(f"❌ File not found: {csv_file}")
     except Exception as e:
-        logging.error(f"❌ Fehler bei Datei {csv_file}: {e}")
+        logging.error(f"❌ Error processing {csv_file}: {e}")
 
-# === Importfunktionen ===
+# === Node Creation Functions ===
 
 def create_project_nodes(csv_file, limit=None):
+    """
+    Create Project nodes from CSV data.
+    Properties: id, code, title, start/end dates, call identifier,
+                keywords, summary, total cost, funded amount
+    """
     query = """
     MERGE (p:Project {id: $id})
     SET p.code = $code,
@@ -112,6 +154,10 @@ def create_project_nodes(csv_file, limit=None):
     load_csv_and_run_batch(csv_file, query, params, limit, show_progress=True)
 
 def create_funder_nodes(csv_file):
+    """
+    Create Funder nodes from enriched CSV data.
+    Properties include name, shortName, ROR identifiers, aliases, location info, etc.
+    """
     query = """
     MERGE (f:Funder {name: $name})
     SET f.shortName = $shortName,
@@ -150,12 +196,20 @@ def create_funder_nodes(csv_file):
     load_csv_and_run_batch(csv_file, query, params, show_progress=True)
 
 def create_country_nodes(csv_file):
+    """
+    Create Country nodes with 'jurisdiction' property.
+    """
     query = "MERGE (c:Country {jurisdiction: $jurisdiction})"
     load_csv_and_run_batch(csv_file, query, lambda row: {
         "jurisdiction": row['jurisdiction']
     }, show_progress=True)
 
+# === Relationship Creation Functions ===
+
 def create_project_funder_relationship(csv_file, limit=None):
+    """
+    Create FUNDED_BY relationships between Project and Funder nodes.
+    """
     query = """
     MATCH (p:Project {id: $project_id})
     MATCH (f:Funder {name: $funder_name})
@@ -167,6 +221,9 @@ def create_project_funder_relationship(csv_file, limit=None):
     }, limit, show_progress=True)
 
 def create_project_country_relationship(csv_file, limit=None):
+    """
+    Create LOCATED_IN relationships between Project and Country nodes.
+    """
     query = """
     MATCH (p:Project {id: $project_id})
     MATCH (c:Country {jurisdiction: $country})
@@ -178,6 +235,9 @@ def create_project_country_relationship(csv_file, limit=None):
     }, limit, show_progress=True)
 
 def create_publication_nodes(csv_file):
+    """
+    Create Publication nodes with DOI, title, journal, and citation count.
+    """
     query = """
     MERGE (pub:Publication {doi: $doi})
     SET pub.title = $title,
@@ -194,6 +254,9 @@ def create_publication_nodes(csv_file):
     load_csv_and_run_batch(csv_file, query, params, show_progress=True)
 
 def create_project_publication_relationship(csv_file):
+    """
+    Create HAS_PUBLICATION relationships between Project and Publication nodes.
+    """
     query = """
     MATCH (p:Project {id: $project_id})
     MATCH (pub:Publication {doi: $doi})
@@ -205,7 +268,11 @@ def create_project_publication_relationship(csv_file):
     }, show_progress=True)
 
 def create_funder_publication_relationship(publication_rel_csv, funder_rel_csv):
-    # project_id → funder_name
+    """
+    Create ACKNOWLEDGED_IN relationships between Funders and Publications
+    based on the mapping of projects to funders and projects to publications.
+    """
+    # Build a mapping from project_id to funder_name for quick lookup
     funder_map = {}
     with open(funder_rel_csv, 'r', encoding='utf-8') as f:
         for row in csv.DictReader(f):
@@ -224,17 +291,21 @@ def create_funder_publication_relationship(publication_rel_csv, funder_rel_csv):
 
     load_csv_and_run_batch(publication_rel_csv, query, params, show_progress=True)
 
-# === Ausführung ===
+# === Main Execution ===
 
 if __name__ == "__main__":
+    # Create nodes
     create_project_nodes(projects_csv_file, limit=LIMIT_ENTRIES)
     create_funder_nodes(funders_csv_file)
     create_country_nodes(countries_csv_file)
+
+    # Create relationships
     create_project_funder_relationship(project_funder_rel_csv_file, limit=LIMIT_ENTRIES)
     create_project_country_relationship(project_country_rel_csv_file, limit=LIMIT_ENTRIES)
     create_publication_nodes(publication_csv_file)
     create_project_publication_relationship(pub_project_rel_csv_file)
     create_funder_publication_relationship(pub_project_rel_csv_file, project_funder_rel_csv_file)
 
+    # Close Neo4j driver connection
     driver.close()
-    logging.info("✅ Der Knowledge Graph wurde vollständig erstellt und erweitert!")
+    logging.info("✅ Knowledge Graph successfully created and extended!")
