@@ -43,12 +43,8 @@ project_country_rel_csv_file = 'data/projects_data_csv/project_country_rel.csv'
 publication_csv_file = 'data/projects_data_csv/project_publications.csv'
 pub_project_rel_csv_file = 'data/projects_data_csv/publication_project_rel.csv'
 
-<<<<<<< HEAD:scripts/kg_pipeline/05_import_to_neo4j.py
 # Limit number of rows processed (None = all)
 LIMIT_ENTRIES = 10000
-=======
-LIMIT_ENTRIES = 10000  # Nur n Projekte   "None" für alle
->>>>>>> 5f2b8b428ff757055455f97922dfdf131398fba9:src/kg_creator.py
 
 # Initialize Neo4j driver for database sessions
 driver = GraphDatabase.driver(uri, auth=(username, password))
