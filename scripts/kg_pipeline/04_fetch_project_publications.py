@@ -5,7 +5,7 @@ import pandas as pd
 # Configuration parameters
 # LIMIT: Maximum number of projects to process. Set to None to process all.
 # ===================================================================
-LIMIT = 1000
+LIMIT = 10000
 
 # ===================================================================
 # Input CSV file paths
