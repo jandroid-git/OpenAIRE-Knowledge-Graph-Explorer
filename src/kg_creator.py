@@ -27,7 +27,7 @@ project_country_rel_csv_file = 'data/projects_data_csv/project_country_rel.csv'
 publication_csv_file = 'data/projects_data_csv/project_publications.csv'
 pub_project_rel_csv_file = 'data/projects_data_csv/publication_project_rel.csv'
 
-LIMIT_ENTRIES = 1000  # Nur n Projekte   "None" für alle
+LIMIT_ENTRIES = 10000  # Nur n Projekte   "None" für alle
 
 driver = GraphDatabase.driver(uri, auth=(username, password))
 

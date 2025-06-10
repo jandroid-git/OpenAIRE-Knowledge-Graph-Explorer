@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 
 # === Parameter ===
-LIMIT = 1000  # Anzahl der Projekte zum Verarbeiten; setze auf None für alle
+LIMIT = 10000  # Anzahl der Projekte zum Verarbeiten; setze auf None für alle
 
 # === Eingabedateien ===
 PROJECTS_CSV = 'data/projects_data_csv/projects.csv'
