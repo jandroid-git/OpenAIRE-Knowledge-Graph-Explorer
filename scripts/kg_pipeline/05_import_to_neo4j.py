@@ -9,23 +9,39 @@ from tqdm import tqdm
 # Date: March 2025
 #
 # Description:
-# This script creates the neo4j Knowledeg Graph based on the initial created node csv files and theire corespondnng csv relationship files using Cypher.
+# This script creates the Neo4j Knowledge Graph based on initial node and relationship
+# CSV files using Cypher queries. It loads structured project, funder and country data,
+# and builds corresponding graph structures.
 #
-# NOTE:
-# 
+# Inputs:
+# - projects.csv: Project node metadata
+# - funders_enriched.csv: Funder node metadata
+# - countries.csv: Country node metadata (not yet implemented)
+# - project_funder_rel.csv: Project-to-Funder relations
+# - project_country_rel.csv: Project-to-Country relations
+# - project_publications.csv: Publication metadata (for enrichment)
+# - publication_project_rel.csv: Publication-to-Project relations
+#
+# Outputs:
+# - Nodes and relationships written into local Neo4j database
+#
+# Notes:
+# - You need to create the file 'neo4j_data/neo_access.txt' with your Neo4j password
 # =====================================================================================
 
 
-# === Configuration and Setup ===
+# -------------------------------------------------------------------------------------
+# Configuration
+# -------------------------------------------------------------------------------------
 
-# Configure logging for informative console output
+# Set up logging to display status messages during processing
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-# Neo4j connection parameters
+# Define Neo4j connection details
 uri = "bolt://localhost:7687"
 username = "neo4j"
 
-# Read Neo4j password from file - this subfolder and file has to be created by yourself and stores the privat password for your local neo4j database
+# Load Neo4j password from local file (must be created manually)
 access_file = "neo4j_data/neo_access.txt"
 try:
     with open(access_file, "r", encoding="utf-8") as f:
@@ -34,7 +50,7 @@ except FileNotFoundError:
     logging.critical(f"❌ Access file not found: {access_file}")
     exit(1)
 
-# CSV input file paths for nodes and relationships
+# Define CSV paths (adjust as needed)
 projects_csv_file = 'data/projects_data_csv/projects.csv'
 funders_csv_file = 'data/projects_data_csv/funders_enriched.csv'
 countries_csv_file = 'data/projects_data_csv/countries.csv'
@@ -43,18 +59,21 @@ project_country_rel_csv_file = 'data/projects_data_csv/project_country_rel.csv'
 publication_csv_file = 'data/projects_data_csv/project_publications.csv'
 pub_project_rel_csv_file = 'data/projects_data_csv/publication_project_rel.csv'
 
-# Limit number of rows processed (None = all)
-LIMIT_ENTRIES = 10000
+# Optional: limit number of rows to process for testing/performance
+LIMIT_ENTRIES = 100000
 
-# Initialize Neo4j driver for database sessions
+# Create Neo4j driver for database access
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
-# === Helper Functions ===
+
+# -------------------------------------------------------------------------------------
+# Helper Functions
+# -------------------------------------------------------------------------------------
 
 def determine_batch_size(total_rows):
     """
-    Determine an appropriate batch size based on the total number of rows.
-    This helps balance memory usage and performance.
+    Returns an appropriate batch size based on the number of rows.
+    Helps balance memory use and transaction efficiency.
     """
     if total_rows <= 50:
         return 10
@@ -73,22 +92,23 @@ def determine_batch_size(total_rows):
 
 def batchify(iterable, batch_size):
     """
-    Yield successive batches of size batch_size from iterable.
+    Splits an iterable into batches of a given size.
+    Useful for efficient bulk insertion into Neo4j.
     """
     for i in range(0, len(iterable), batch_size):
         yield iterable[i:i + batch_size]
 
 def load_csv_and_run_batch(csv_file, query, param_fn, limit=None, show_progress=False):
     """
-    Generic function to load a CSV file, read data rows, and execute
-    a given Cypher query in batches on Neo4j.
-    
-    Parameters:
-    - csv_file: path to the CSV file
-    - query: Cypher query string with parameters
-    - param_fn: function that maps a CSV row dict to query parameters
-    - limit: optional max number of rows to process
-    - show_progress: whether to display a tqdm progress bar
+    Loads data from a CSV file, prepares query parameters, and executes Cypher
+    write transactions in batches.
+
+    Arguments:
+    - csv_file: path to CSV file
+    - query: Cypher query string
+    - param_fn: function to map CSV row to Cypher parameters
+    - limit: max number of rows to process
+    - show_progress: whether to display tqdm progress bar
     """
     try:
         with open(csv_file, 'r', encoding='utf-8') as file:
@@ -98,13 +118,11 @@ def load_csv_and_run_batch(csv_file, query, param_fn, limit=None, show_progress=
 
             total = len(reader)
             batch_size = determine_batch_size(total)
-
             iterator = batchify(reader, batch_size)
             bar = tqdm(total=total, desc=f"Loading {csv_file}", unit="rows") if show_progress else None
 
             with driver.session() as session:
                 for batch in iterator:
-                    # Execute write transactions for each batch
                     session.execute_write(lambda tx: [tx.run(query, **param_fn(row)) for row in batch])
                     if bar:
                         bar.update(len(batch))
@@ -113,18 +131,21 @@ def load_csv_and_run_batch(csv_file, query, param_fn, limit=None, show_progress=
                 bar.close()
 
         logging.info(f"✅ Processed: {csv_file} (Limit: {limit}, Batch Size: {batch_size})")
+
     except FileNotFoundError:
         logging.error(f"❌ File not found: {csv_file}")
     except Exception as e:
         logging.error(f"❌ Error processing {csv_file}: {e}")
 
-# === Node Creation Functions ===
+
+# -------------------------------------------------------------------------------------
+# Node Creation Functions
+# -------------------------------------------------------------------------------------
 
 def create_project_nodes(csv_file, limit=None):
     """
-    Create Project nodes from CSV data.
-    Properties: id, code, title, start/end dates, call identifier,
-                keywords, summary, total cost, funded amount
+    Creates Project nodes from the CSV file.
+    Each project has metadata such as title, duration, keywords, costs, etc.
     """
     query = """
     MERGE (p:Project {id: $id})
@@ -151,12 +172,13 @@ def create_project_nodes(csv_file, limit=None):
             "totalCost": float(row['totalCost']) if row['totalCost'] else 0.0,
             "fundedAmount": float(row['fundedAmount']) if row['fundedAmount'] else 0.0
         }
+
     load_csv_and_run_batch(csv_file, query, params, limit, show_progress=True)
 
 def create_funder_nodes(csv_file):
     """
-    Create Funder nodes from enriched CSV data.
-    Properties include name, shortName, ROR identifiers, aliases, location info, etc.
+    Creates Funder nodes based on enriched metadata.
+    Includes location info, aliases, ROR IDs, etc.
     """
     query = """
     MERGE (f:Funder {name: $name})
@@ -193,22 +215,31 @@ def create_funder_nodes(csv_file):
             "lng": float(row['lng']) if row.get('lng', '').strip() else None,
             "city_name": row.get('city_name', '')
         }
+
     load_csv_and_run_batch(csv_file, query, params, show_progress=True)
+
+# -------------------------------------------------------------------------------------
+# Node Creation: Countries
+# -------------------------------------------------------------------------------------
 
 def create_country_nodes(csv_file):
     """
-    Create Country nodes with 'jurisdiction' property.
+    Create Country nodes from CSV data.
+    Each country node has a 'jurisdiction' property used as a unique identifier.
     """
     query = "MERGE (c:Country {jurisdiction: $jurisdiction})"
     load_csv_and_run_batch(csv_file, query, lambda row: {
         "jurisdiction": row['jurisdiction']
     }, show_progress=True)
 
-# === Relationship Creation Functions ===
+# -------------------------------------------------------------------------------------
+# Relationship Creation Functions
+# -------------------------------------------------------------------------------------
 
 def create_project_funder_relationship(csv_file, limit=None):
     """
     Create FUNDED_BY relationships between Project and Funder nodes.
+    Requires matching by project ID and funder name.
     """
     query = """
     MATCH (p:Project {id: $project_id})
@@ -223,6 +254,7 @@ def create_project_funder_relationship(csv_file, limit=None):
 def create_project_country_relationship(csv_file, limit=None):
     """
     Create LOCATED_IN relationships between Project and Country nodes.
+    Matches by project ID and country jurisdiction.
     """
     query = """
     MATCH (p:Project {id: $project_id})
@@ -234,9 +266,14 @@ def create_project_country_relationship(csv_file, limit=None):
         "country": row['country']
     }, limit, show_progress=True)
 
+# -------------------------------------------------------------------------------------
+# Node Creation: Publications
+# -------------------------------------------------------------------------------------
+
 def create_publication_nodes(csv_file):
     """
-    Create Publication nodes with DOI, title, journal, and citation count.
+    Create Publication nodes from CSV data.
+    Each publication has a DOI, title, journal, and citation count.
     """
     query = """
     MERGE (pub:Publication {doi: $doi})
@@ -253,9 +290,14 @@ def create_publication_nodes(csv_file):
         }
     load_csv_and_run_batch(csv_file, query, params, show_progress=True)
 
+# -------------------------------------------------------------------------------------
+# Relationship: Project ↔ Publication
+# -------------------------------------------------------------------------------------
+
 def create_project_publication_relationship(csv_file):
     """
     Create HAS_PUBLICATION relationships between Project and Publication nodes.
+    Matches by project ID and publication DOI.
     """
     query = """
     MATCH (p:Project {id: $project_id})
@@ -267,17 +309,22 @@ def create_project_publication_relationship(csv_file):
         "doi": row['doi']
     }, show_progress=True)
 
+# -------------------------------------------------------------------------------------
+# Relationship: Funder ↔ Publication (via project)
+# -------------------------------------------------------------------------------------
+
 def create_funder_publication_relationship(publication_rel_csv, funder_rel_csv):
     """
-    Create ACKNOWLEDGED_IN relationships between Funders and Publications
-    based on the mapping of projects to funders and projects to publications.
+    Create ACKNOWLEDGED_IN relationships between Funders and Publications.
+    Uses project → funder and project → publication mappings to infer connections.
     """
-    # Build a mapping from project_id to funder_name for quick lookup
+    # Build mapping of project_id → funder_name
     funder_map = {}
     with open(funder_rel_csv, 'r', encoding='utf-8') as f:
         for row in csv.DictReader(f):
             funder_map[row['project_id']] = row['funder_name']
 
+    # Define Cypher query for linking funders to publications
     query = """
     MATCH (f:Funder {name: $funder_name})
     MATCH (pub:Publication {doi: $doi})
@@ -291,21 +338,23 @@ def create_funder_publication_relationship(publication_rel_csv, funder_rel_csv):
 
     load_csv_and_run_batch(publication_rel_csv, query, params, show_progress=True)
 
-# === Main Execution ===
+# -------------------------------------------------------------------------------------
+# Main Execution
+# -------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    # Create nodes
+    # Create node types
     create_project_nodes(projects_csv_file, limit=LIMIT_ENTRIES)
     create_funder_nodes(funders_csv_file)
     create_country_nodes(countries_csv_file)
 
-    # Create relationships
+    # Create relationships between nodes
     create_project_funder_relationship(project_funder_rel_csv_file, limit=LIMIT_ENTRIES)
     create_project_country_relationship(project_country_rel_csv_file, limit=LIMIT_ENTRIES)
     create_publication_nodes(publication_csv_file)
     create_project_publication_relationship(pub_project_rel_csv_file)
     create_funder_publication_relationship(pub_project_rel_csv_file, project_funder_rel_csv_file)
 
-    # Close Neo4j driver connection
+    # Clean up and close Neo4j connection
     driver.close()
     logging.info("✅ Knowledge Graph successfully created and extended!")
