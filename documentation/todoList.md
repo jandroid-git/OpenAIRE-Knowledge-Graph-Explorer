@@ -1,6 +1,6 @@
 # Phasen in der Prüfung
 
-## Teil 1 – Katerina ~6 Min
+## Teil 1 – Katerina ~4 Min
 
 1. **Open Aire KG vorstellen**
 2. **Project Ziel und Concept Map**
@@ -8,12 +8,13 @@
 4. **Datenimport**
 5. **Importdaten Dashboard Overview**
 
-## Teil 2 – Jan ~4 Minuten
+## Teil 2 – Jan ~6 Minuten
 
-6. **Data Enrichment vorstellen**
-7. **Knowledge Graph bauen**
-8. **KG Showcase**
-9. **Fazit**
+6. **Repo showcase**
+7. **Setup project**
+8. **Pipeline in use**
+9. **KG Showcase**
+
 
 ---
 
@@ -21,9 +22,7 @@
 
 ## Jan
 
-- [ ] Installationsanleitung erstellen
-- [ ] Repository aufräumen
-- [ ] Code säubern und aus dokumentieren (im code)
+done
 
 ## Katerina
 
