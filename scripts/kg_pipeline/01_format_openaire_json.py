@@ -14,11 +14,11 @@ import os
 # - The source JSON files must not be compressed. If they are zipped, unzip them locally first.
 # =====================================================================================
 
-# Define the path to the folder containing the original (raw) project data files
-input_folder = r"data\original_projects_data_april2025"
+# Define the path to the folder containing the original (raw) project data files from the OpenAIRE KG fileforamt - json
+input_folder = r"data/original_openAIRE_data/original_projects_data_april2025"
 
 # Define the path to the folder where cleaned and formatted files will be saved
-output_folder = r"data\cleaned_projects_data_april2025"
+output_folder = r"data/cleaned_projects_data_april2025"
 
 # Ensure the output directory exists; create it if it does not
 if not os.path.exists(output_folder):
