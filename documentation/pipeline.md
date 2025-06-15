@@ -1,5 +1,6 @@
 ## Step one: Download the data
 - To start the project, you need to donwload the data local. The raw data is available as a ZIP archive and is very large - therefore it cannot be saved in the GitHub repository. Please download them yourself. Link: https://zenodo.org/records/14851262. Then unzipped the folder into data/original_projects_data_april2025/
+- To avoid unexpected errors, we’ve provided a "setup.py" script. Running this script will check that all required dependencies are installed and ready for use before executing any other scripts
 
 
 ## Step two: JSON Cleaning & Wrapping 
@@ -21,21 +22,21 @@
     - Writes cleaned versions into cleaned_projects_data_april2025 (created automatically).
 
 - How to run ?
-    - python src/format_json.py
+    - python scripts/format_json.py
 
 
 ## Step three: Convert Cleaned JSON to Structured CSV Files 
 - Transform cleaned JSON project files into structured CSV tables for use in downstream scripts and Neo4j import.
 
 - Why this matters
-    - CSV is easier for bulk-loading, relational analysis, and visualizations. This script src/02_extract_projects_to_csv.py 
+    - CSV is easier for bulk-loading, relational analysis, and visualizations. This script scripts/02_extract_projects_to_csv.py 
         - extracts project metada (ID, title, dates, cost, etc.)
         - records funder details (name, shortName) and avoids duplicates
         - records country jurisdictions and deduplicates
         - builds link tables: 
             - Project -> Funder (many-to-many)
             - Project -> Country (many-to-many)
-- After running this code with python src/json_to_csv.py, it will automatically make clean csv data frame in data\projects_data_csv
+- After running this code with python scripts/json_to_csv.py, it will automatically make clean csv data frame in data\projects_data_csv
 
 ## Step four: Link Projects with Publications via CrossRef
 - This script enriches your dataset by discovering scientific publications related to OpenAIRE projects using the CrossRef API and linking them. You will need to download the data from: https://zenodo.org/records/15475023
@@ -59,7 +60,7 @@
         - Store publication metadata and project-publication link
     4) Write CSV outputs
 
-- Run the script using python src/03_enrich_funders_with_ror.py
+- Run the script using python scripts/03_enrich_funders_with_ror.py
 
 ## Step five: Build Local Knowledge Graph in Neo4j
 - This script imports structured CSV data into a local Neo4j database, creating a knowledge graph with nodes and relationships for Projects, Funders, Countries, and Publications.
@@ -75,7 +76,7 @@
     - Supports future graph augmentations, e.g., adding methods, researchers, or institutions
 
 - How to run
-    - ensure Neo4j is running and password is set in neo4j_data/neo_acces.txt and then run the script using python src/05_import_to_neo4j.py
+    - ensure Neo4j is running and password is set in neo4j_data/neo_acces.txt and then run the script using python scripts/05_import_to_neo4j.py
 
 
 # Dashboard Overview
