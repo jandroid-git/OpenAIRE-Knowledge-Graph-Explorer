@@ -6,8 +6,13 @@ It is designed to process OpenAIRE-provided CSV datasets and construct a structu
 ![Knowledge Graph Example Visualization](assets/graph.png)
 
 
+### 🔄 Data Processing Pipeline
 
+![Pipeline Diagram](documentation/pipeline.png)
 
+Each step is explained in detail in our documentation.
+
+📄 **Read full documentation here**  [documentation/project_pipeline.md](documentation/project_pipeline.md)
 
 
 

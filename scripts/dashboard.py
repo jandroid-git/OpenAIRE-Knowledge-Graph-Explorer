@@ -22,11 +22,11 @@ project_publications['citation_count'] = pd.to_numeric(project_publications['cit
 
 # === Streamlit Layout ===
 st.set_page_config(page_title="OpenAIRE Dashboard", layout="wide")
-st.title("OpenAIRE Research Project Dashboard")
+st.title("OpenAIRE Research Project Dashboard (with 10.000 Projects)")
 
 # === KPIs ===
 col1, col2, col3 = st.columns(3)
-col1.metric("Total Projects", f"{len(projects):,}")
+col1.metric("Total Projects (up to 10k)", f"{len(projects):,}")
 col2.metric("Earliest Year", int(projects['startYear'].min()) if not projects.empty else "-")
 col3.metric("Latest Year", int(projects['startYear'].max()) if not projects.empty else "-")
 
@@ -41,6 +41,7 @@ ax1.set_title('Projects per Year')
 ax1.set_xlabel('Year')
 ax1.set_ylabel('Number of Projects')
 st.pyplot(fig1)
+st.write(" Shows trends in research funding activity over time.")
 
 # === 2. Average Funding per Year ===
 st.subheader("Average Funding Amount per Year")
@@ -51,6 +52,8 @@ ax2.set_title('Average Funding Amount per Year')
 ax2.set_xlabel('Year')
 ax2.set_ylabel('€')
 st.pyplot(fig2)
+st.write("Reveals whether funding per project is increasing or decreasing over time.")
+
 
 # === 3. Projects by Country ===
 st.subheader("Projects by Country")
@@ -61,6 +64,8 @@ ax3.set_title('Top 15 Countries by Number of Projects')
 ax3.set_xlabel('Projects')
 ax3.set_ylabel('Country')
 st.pyplot(fig3)
+st.write("Highlights geographical distribution of research activity.")
+
 
 # === 4. Top 10 Funders by Number of Projects ===
 st.subheader("Top 10 Funders by Project Count")
@@ -71,6 +76,8 @@ ax4.set_title('Top Funders by Project Count')
 ax4.set_xlabel('Projects')
 ax4.set_ylabel('Funder')
 st.pyplot(fig4)
+st.write("Identifies major funders in terms of volume.")
+
 
 # === 5. Top 10 Funders by Total Funding ===
 st.subheader("Top 10 Funders by Total Funding Amount")
@@ -82,6 +89,7 @@ ax5.set_title('Top Funders by Total Funding (€)')
 ax5.set_xlabel('Total (€)')
 ax5.set_ylabel('Funder')
 st.pyplot(fig5)
+st.write("Shows which funders provide the most total money.")
 
 # === 6. Average Funding per Funder ===
 st.subheader("Average Funding Amount per Funder")
@@ -92,6 +100,8 @@ ax6.set_title('Top Funders by Average Funding (€)')
 ax6.set_xlabel('Average (€)')
 ax6.set_ylabel('Funder')
 st.pyplot(fig6)
+st.write("Highlights funders that give higher amounts per project.")
+
 
 # === 7. Project Duration vs. Funding ===
 st.subheader("Project Duration vs. Funding Amount")
@@ -102,6 +112,8 @@ ax7.set_title('Project Duration vs. Funding Amount')
 ax7.set_xlabel('Duration (days)')
 ax7.set_ylabel('Funding (€)')
 st.pyplot(fig7)
+st.write("Explore correlation between duration and funding.")
+
 
 # === 8. Top Projects by Number of Publications ===
 st.subheader("Top Projects by Number of Publications")
@@ -115,6 +127,7 @@ ax8.set_title('Top Projects by Number of Publications')
 ax8.set_xlabel('Publications')
 ax8.set_ylabel('Project Title')
 st.pyplot(fig8)
+st.write("Shows productivity in terms of outputs.")
 
 # === 9. Top Publications by Citation Count ===
 st.subheader("Top Publications by Citation Count")
@@ -125,6 +138,7 @@ ax9.set_title('Most Cited Publications')
 ax9.set_xlabel('Citations')
 ax9.set_ylabel('Publication Title')
 st.pyplot(fig9)
+st.write("Identifies the most influential published work.")
 
 # === 10. Top Journals by Number of Publications ===
 st.subheader("Top Journals by Number of Publications")
@@ -135,6 +149,7 @@ ax10.set_title('Top Journals by Publication Count')
 ax10.set_xlabel('Publications')
 ax10.set_ylabel('Journal')
 st.pyplot(fig10)
+st.write("Highlights publishing venues used most frequently.")
 
 # === 11. Distribution of Citation Counts ===
 st.subheader("Distribution of Citation Counts")
@@ -144,6 +159,7 @@ ax11.set_title('Distribution of Citation Counts')
 ax11.set_xlabel('Citations')
 ax11.set_ylabel('Frequency')
 st.pyplot(fig11)
+st.write("Provides insight into how citations are distributed across publications.")
 
 # === 12. Average Citation per Project ===
 st.subheader("Top Projects by Average Citation Count")
@@ -156,6 +172,7 @@ ax12.set_title('Top Projects by Average Citation Count')
 ax12.set_xlabel('Average Citations')
 ax12.set_ylabel('Project Title')
 st.pyplot(fig12)
+st.write("Measures projects’ overall impact per output.")
 
 st.markdown("---")
 st.caption("Source: OpenAIRE. Built with Python and Streamlit.")
