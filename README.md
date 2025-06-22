@@ -8,7 +8,7 @@ It is designed to process OpenAIRE-provided CSV datasets and construct a structu
 
 ### 🔄 Data Processing Pipeline
 
-![Pipeline Diagram](documentation/pipeline.png)
+![Pipeline Diagram](documentation/pipeline_project.png)
 
 Each step is explained in detail in our documentation.
 
