@@ -22,7 +22,7 @@
     - Writes cleaned versions into cleaned_projects_data_april2025 (created automatically).
 
 - How to run ?
-    - python scripts/format_json.py
+    - python scripts/kg_pipeline/format_json.py
 
 
 ## Step three: Convert Cleaned JSON to Structured CSV Files 
@@ -36,15 +36,44 @@
         - builds link tables: 
             - Project -> Funder (many-to-many)
             - Project -> Country (many-to-many)
-- After running this code with python scripts/json_to_csv.py, it will automatically make clean csv data frame in data\projects_data_csv
+- After running this code with python scripts/kg_pipeline/json_to_csv.py, it will automatically make clean csv data frame in data/projects_data_csv
 
-## Step four: Link Projects with Publications via CrossRef
-- This script enriches your dataset by discovering scientific publications related to OpenAIRE projects using the CrossRef API and linking them. You will need to download the data from: https://zenodo.org/records/15475023
+
+## Step four: Funder ROR Enrichment
+- Purpose of this is to enrich funder metadata. For this you will need to download the data from: https://zenodo.org/records/15475023.
+
+- This script takes a list of funding organizations (from fundes.csv) and attempts to match them with official entries from the ROR registry. If a match is found (based on name, alias, or acronym), additional metada is added to the funder, including:
+    - Official ROR name and ID
+    - Types and status
+    - Alliases and acronyms 
+    - Links (e.g. Wikipedia, homepage)
+    Location data (city, latitude, longitude)
+    - Year of establishment
+
+- We have following input and output files:
+    - fundes.csv: Raw funder names and short names
+    -  v1.66-2025-05-20-ror-data.csv: ROR metadata (exported JSON transformed to CSV)
+    - funders_enriched.csv: The enriched funder list containing both original and ROR metadata fields
+
+- How it works
+    - Loads all funder names and normalizes them (case insensitive)
+    - Parses ROR entries and builds a lookup index using: Official name, Known aliases, Acronyms
+    - Compares each funder with this index.
+    - Appends metadata to each funder if a match is found
+    Exports the result to funders_enriched.csv
+
+- Why it's important
+    - Accurate funder identification is essential for reliable aggregation, linking, and visualization of funding data. The ROR enrichment ensures consistency, disambiguation, and enhances our graph with geospatial and semantic metadata for each funder.
+- Run this script using python scripts/kg_pipeline/03_enrich_funders_with_ror.py
+
+## Step five: Link Projects with Publications via CrossRef
+- This script enriches your dataset by discovering scientific publications related to OpenAIRE projects using the CrossRef API and linking them.
 
 - Why we need this
-    - Links ongoing project impact via publication counts and citations
-    - Helps quantify project impact via publication counts and citations
-    - Enables deeper network analysis and visualization by connecting Project -> Publishers/Funders
+    - Links ongoing projects to their real-world scientific output
+    - Helps quantify project impact through publication counts and citation metrics
+    - Enables deeper network analysis and graph visualization by connecting:
+Project → Publication → Funder / Journal
 
 - How it works
     1) Load input CSVs 
@@ -53,16 +82,19 @@
         - Exact match on "ror_name"
         - Partial match via aliases field
     3) Loop over each project (up to LIMIT)
-        - Query crossref with project title (and funder filter, if matched)
-        - Take up to 5 hits
-        - Extract DOI, title, journal, citation count.
-        - Skip duplicate DOIs
-        - Store publication metadata and project-publication link
+        - Query the CrossRef API using the project title (optionally also funder name)
+        - Retrieve up to 5 publication matches
+        - For each publication: 
+            - extract DOI, title, journal, citation count.
+            - Skip duplicate DOIs
+            - Store publication metadata and project-publication link
     4) Write CSV outputs
+        - project_publications.csv: unique publication records
+        - publication_project_rel.csv: mapping between projects and publications
 
-- Run the script using python scripts/03_enrich_funders_with_ror.py
+- Run the script using python scripts/kg_pipeline/03_enrich_funders_with_ror.py
 
-## Step five: Build Local Knowledge Graph in Neo4j
+## Step six: Build Local Knowledge Graph in Neo4j
 - This script imports structured CSV data into a local Neo4j database, creating a knowledge graph with nodes and relationships for Projects, Funders, Countries, and Publications.
 
 - How it works 
@@ -76,7 +108,7 @@
     - Supports future graph augmentations, e.g., adding methods, researchers, or institutions
 
 - How to run
-    - ensure Neo4j is running and password is set in neo4j_data/neo_acces.txt and then run the script using python scripts/05_import_to_neo4j.py
+    - ensure Neo4j is running and password is set in neo4j_data/neo_acces.txt and then run the script using python scripts/kg_pipeline/05_import_to_neo4j.py
 
 
 # Dashboard Overview
@@ -100,7 +132,7 @@
     3) Visualize results using seaborn/matplotlib for easy interpretation
     4) Render plots in a web IU where users can explore trends interactively
 - To launch the dashboard, run the following in your terminal:
-streamlit run src/dashboard.py
+streamlit run scripts/dashboard.py
 Then open the displayed URL (usually http://localhost:8501) in your browser.
 
 
