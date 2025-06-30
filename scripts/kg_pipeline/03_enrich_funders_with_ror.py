@@ -4,7 +4,7 @@ from tqdm import tqdm  # For progress tracking during funder enrichment
 
 # =====================================================================================
 # Script: Funders ROR Enrichment
-# Author: [Your Name]
+# Author: Jan
 # Date: May 2025
 #
 # Description:
