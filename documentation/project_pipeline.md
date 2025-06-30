@@ -1,5 +1,5 @@
 ## Step one: Download the data
-- To start the project, you need to donwload the data local. The raw data is available as a ZIP archive and is very large - therefore it cannot be saved in the GitHub repository. Please download them yourself. Link: https://zenodo.org/records/14851262. Then unzipped the folder into data/original_projects_data_april2025/
+- To start the project, you need to donwload the data local. The raw data is available as a ZIP archive and is very large - therefore it cannot be saved in the GitHub repository. Please download them yourself. Link: https://zenodo.org/records/14851262 (project.tar). Then unzipped the folder into data/original_projects_data_april2025/
 - To avoid unexpected errors, we’ve provided a "setup.py" script. Running this script will check that all required dependencies are installed and ready for use before executing any other scripts
 
 
@@ -42,7 +42,7 @@
 ## Step four: Funder ROR Enrichment
 - Purpose of this is to enrich funder metadata. For this you will need to download the data from: https://zenodo.org/records/15475023.
 
-- This script takes a list of funding organizations (from fundes.csv) and attempts to match them with official entries from the ROR registry. If a match is found (based on name, alias, or acronym), additional metada is added to the funder, including:
+- This script takes a list of funding organizations (from funders.csv) and attempts to match them with official entries from the ROR registry. If a match is found (based on name, alias, or acronym), additional metada is added to the funder, including:
     - Official ROR name and ID
     - Types and status
     - Alliases and acronyms 
