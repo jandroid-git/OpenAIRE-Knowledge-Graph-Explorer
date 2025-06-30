@@ -100,7 +100,7 @@
     3) Visualize results using seaborn/matplotlib for easy interpretation
     4) Render plots in a web IU where users can explore trends interactively
 - To launch the dashboard, run the following in your terminal:
-streamlit run src/dashboard.py
+streamlit run scripts/dashboard.py
 Then open the displayed URL (usually http://localhost:8501) in your browser.
 
 
